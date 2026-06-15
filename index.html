@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Дневник">
+<meta name="theme-color" content="#F4EDE2">
+<meta name="format-detection" content="telephone=no">
+<title>Дневник жизни питомца</title>
+
+<!-- ===========================================================================
+  НАСТРОЙКА (делается один раз):
+  1. Создайте бесплатный проект на supabase.com
+  2. В разделе SQL Editor вставьте и запустите этот код:
+
+     create table if not exists pets (
+       id uuid primary key default gen_random_uuid(),
+       user_id uuid not null default auth.uid() references auth.users on delete cascade,
+       name text not null, emoji text default '🐶',
+       species text, breed text, birthday date,
+       created_at timestamptz default now()
+     );
+     create table if not exists events (
+       id uuid primary key default gen_random_uuid(),
+       user_id uuid not null default auth.uid() references auth.users on delete cascade,
+       pet_id uuid not null references pets on delete cascade,
+       category text not null, title text, date date not null, notes text,
+       created_at timestamptz default now()
+     );
+     alter table pets enable row level security;
+     alter table events enable row level security;
+     create policy "own pets" on pets for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+     create policy "own events" on events for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+  3. В Settings → API скопируйте Project URL и ключ "anon public"
+  4. Вставьте их ниже в SUPABASE_URL и SUPABASE_ANON_KEY
+============================================================================ -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Nunito:wght@400;500;600;700;800&display=swap');
+
+:root{
+  --bg:#F4EDE2; --surface:#FFFFFF; --surface2:#FCF7F0;
+  --ink:#3A332B; --soft:#8A7F71; --line:#EBE1D3;
+  --accent:#E0736A; --accent2:#C85C54; --sage:#8AA17F;
+  --shadow:0 6px 20px -8px rgba(80,60,40,.18);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:'Nunito',system-ui,-apple-system,sans-serif;color:var(--ink);background:var(--bg);min-height:100vh;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+.ic{display:block}
+button{font-family:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.plc-shell{max-width:460px;margin:0 auto;display:flex;flex-direction:column;gap:14px;padding:calc(env(safe-area-inset-top) + 14px) 16px calc(env(safe-area-inset-bottom) + 110px)}
+
+.plc-top{position:relative;display:flex;align-items:center;justify-content:center;padding:4px 0 2px}
+.plc-brand{display:flex;align-items:center;gap:8px;font-family:'Fraunces',serif;font-size:19px;font-weight:600}
+.plc-brand-mark{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:var(--accent);color:#fff}
+.plc-logout{position:absolute;right:0;top:50%;transform:translateY(-50%);background:var(--surface);border:1px solid var(--line);color:var(--soft);border-radius:999px;padding:6px 11px;font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px}
+
+.plc-card{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);position:relative}
+.plc-edit{position:absolute;top:14px;right:14px;width:30px;height:30px;border:none;border-radius:9px;background:var(--surface2);color:var(--soft);display:grid;place-items:center;cursor:pointer}
+
+.plc-switch{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.plc-switch::-webkit-scrollbar{display:none}
+.plc-chip{flex:0 0 auto;display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);color:var(--soft);border-radius:999px;padding:7px 13px;font-weight:700;font-size:13px;cursor:pointer}
+.plc-chip.is-on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.plc-chip-add{padding:7px 10px;color:var(--accent)}
+
+.plc-pet{padding:20px}
+.plc-pet-head{display:flex;align-items:center;gap:14px}
+.plc-avatar{width:60px;height:60px;border-radius:18px;display:grid;place-items:center;font-size:32px;background:var(--surface2);border:1px solid var(--line)}
+.plc-pet-id h1{font-family:'Fraunces',serif;font-weight:600;font-size:25px;margin:0;line-height:1.05}
+.plc-pet-id p{margin:3px 0 0;color:var(--soft);font-size:13.5px;font-weight:600;text-transform:capitalize}
+.plc-age{margin-top:16px;display:flex;flex-direction:column;gap:4px}
+.plc-age-num{font-family:'Fraunces',serif;font-size:21px;font-weight:600;color:var(--accent2)}
+.plc-age-cap{display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--soft);font-weight:600}
+
+.plc-ribbon{position:relative;height:30px;margin-top:14px}
+.plc-ribbon-line{position:absolute;top:14px;left:10px;right:10px;height:3px;border-radius:3px;background:linear-gradient(90deg,var(--sage),var(--accent))}
+.plc-ribbon-end{position:absolute;top:6px;width:21px;height:21px;border-radius:50%;display:grid;place-items:center;color:#fff;z-index:2}
+.plc-ribbon-start{left:0;background:var(--sage)}
+.plc-ribbon-now{right:0;background:var(--accent)}
+.plc-bead{position:absolute;top:11px;width:9px;height:9px;border-radius:50%;transform:translateX(-50%);border:2px solid var(--surface);z-index:1}
+.plc-hint{margin:14px 0 0;color:var(--soft);font-size:13px;font-weight:600}
+.plc-hint-c{text-align:center;padding:8px 0}
+.plc-textbtn{margin-top:14px;background:none;border:none;color:var(--accent2);font-weight:700;font-size:13.5px;display:flex;align-items:center;gap:5px;cursor:pointer;padding:0}
+
+.plc-viewtabs{display:flex;gap:6px;background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:4px}
+.plc-viewtabs button{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;border:none;background:none;color:var(--soft);font-weight:700;font-size:13.5px;padding:9px;border-radius:10px;cursor:pointer}
+.plc-viewtabs button.is-on{background:var(--surface);color:var(--ink);box-shadow:0 2px 6px -3px rgba(80,60,40,.25)}
+
+.plc-stack{display:flex;flex-direction:column;gap:10px}
+.plc-sec{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--soft);margin:6px 2px 0}
+
+.plc-event{display:flex;gap:12px;padding:13px 14px;align-items:flex-start}
+.plc-event-ic{flex:0 0 auto;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:20px}
+.plc-event-body{flex:1;min-width:0}
+.plc-event-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.plc-event-top strong{font-size:15px;font-weight:700}
+.plc-when{flex:0 0 auto;font-size:12px;font-weight:700;color:var(--soft)}
+.plc-when.is-soon{color:var(--accent2)}
+.plc-event-date{display:block;font-size:12.5px;color:var(--soft);font-weight:600;margin-top:1px}
+.plc-event-notes{margin:7px 0 0;font-size:13.5px;color:#5d544a;line-height:1.45;font-weight:500;white-space:pre-wrap}
+.plc-event-acts{display:flex;flex-direction:column;gap:4px}
+.plc-event-acts button{width:28px;height:28px;border:none;background:var(--surface2);border-radius:8px;color:var(--soft);display:grid;place-items:center;cursor:pointer}
+
+.plc-cal{padding:14px}
+.plc-cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.plc-cal-head span{font-family:'Fraunces',serif;font-weight:600;font-size:17px}
+.plc-cal-head button{width:32px;height:32px;border:none;background:var(--surface2);border-radius:10px;color:var(--ink);display:grid;place-items:center;cursor:pointer}
+.plc-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.plc-cal-wd{margin-bottom:4px}
+.plc-wd{text-align:center;font-size:11px;font-weight:800;color:var(--soft);padding:2px 0}
+.plc-day{aspect-ratio:1;border:1px solid transparent;border-radius:11px;background:var(--surface2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;padding:2px}
+.plc-day.is-empty{background:none;cursor:default}
+.plc-day-n{font-size:13px;font-weight:700}
+.plc-day.is-today{background:var(--surface);border-color:var(--accent)}
+.plc-day.is-today .plc-day-n{color:var(--accent2)}
+.plc-day.is-sel{background:var(--ink)}
+.plc-day.is-sel .plc-day-n{color:#fff}
+.plc-dots{display:flex;gap:2px;height:6px;align-items:center}
+.plc-dots i{width:5px;height:5px;border-radius:50%}
+.plc-daybar{display:flex;align-items:center;justify-content:space-between;padding:2px 4px;margin-top:4px}
+.plc-daybar span{font-weight:800;font-size:14px}
+
+.plc-empty{padding:34px 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;color:var(--soft)}
+.plc-empty p{margin:0;font-weight:600;font-size:14px}
+.plc-welcome{padding:38px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
+.plc-welcome-emoji{font-size:46px}
+.plc-welcome h1{font-family:'Fraunces',serif;font-weight:600;font-size:26px;margin:4px 0 0}
+.plc-welcome p{margin:0 0 6px;color:var(--soft);font-weight:600;font-size:14px;line-height:1.5;max-width:280px}
+
+.plc-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;background:var(--accent);color:#fff;border:none;border-radius:13px;padding:12px 18px;font-weight:800;font-size:14.5px;cursor:pointer;box-shadow:0 6px 14px -6px rgba(224,115,106,.7)}
+.plc-btn:disabled{opacity:.55;cursor:default;box-shadow:none}
+.plc-btn-sm{padding:8px 13px;font-size:13px;border-radius:11px}
+.plc-btn-ghost{background:var(--surface2);color:var(--ink);box-shadow:none}
+.plc-btn-danger{color:var(--accent2)}
+
+#fab{position:fixed;width:56px;height:56px;border-radius:18px;background:var(--accent);color:#fff;border:none;display:grid;place-items:center;cursor:pointer;box-shadow:0 12px 24px -8px rgba(224,115,106,.9);z-index:20;right:max(20px, env(safe-area-inset-right));bottom:calc(env(safe-area-inset-bottom) + 22px)}
+
+.plc-overlay{position:fixed;inset:0;background:rgba(58,51,43,.42);display:flex;align-items:flex-end;justify-content:center;z-index:40;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);animation:plc-fade .18s ease}
+.plc-sheet{background:var(--surface);width:100%;max-width:460px;border-radius:26px 26px 0 0;padding:8px 18px calc(env(safe-area-inset-bottom) + 22px);max-height:92vh;overflow-y:auto;animation:plc-up .26s cubic-bezier(.2,.9,.3,1)}
+.plc-sheet-grab{width:38px;height:4px;border-radius:4px;background:var(--line);margin:6px auto 10px}
+.plc-sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.plc-sheet-head h3{font-family:'Fraunces',serif;font-weight:600;font-size:20px;margin:0}
+.plc-iconbtn{width:32px;height:32px;border:none;background:var(--surface2);border-radius:10px;color:var(--soft);display:grid;place-items:center;cursor:pointer}
+.plc-sheet-body{display:flex;flex-direction:column;gap:12px}
+.plc-sheet-acts{display:flex;gap:10px;margin-top:8px}
+.plc-sheet-acts .plc-btn:last-child{flex:1}
+
+.plc-field{display:flex;flex-direction:column;gap:6px}
+.plc-lbl{font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--soft)}
+.plc-input{width:100%;border:1.5px solid var(--line);background:var(--surface2);border-radius:12px;padding:11px 13px;font-size:16px;font-family:inherit;color:var(--ink);font-weight:600}
+.plc-input:focus{outline:none;border-color:var(--accent);background:var(--surface)}
+.plc-area{resize:vertical;font-weight:500;line-height:1.45;min-height:74px}
+.plc-row2{display:flex;gap:10px}
+.plc-row2 .plc-field{flex:1}
+
+.plc-emoji-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.plc-emoji{aspect-ratio:1;border:1.5px solid var(--line);background:var(--surface2);border-radius:12px;font-size:22px;cursor:pointer;display:grid;place-items:center}
+.plc-emoji.is-on{border-color:var(--accent);background:#fff}
+
+.plc-cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.plc-cat{display:flex;align-items:center;gap:7px;border:1.5px solid var(--line);background:var(--surface2);border-radius:12px;padding:10px 11px;font-weight:700;font-size:13.5px;color:var(--soft);cursor:pointer}
+
+/* auth + setup + loading */
+.plc-auth{max-width:380px;margin:0 auto;padding-top:6vh;display:flex;flex-direction:column;gap:14px}
+.plc-auth-logo{width:56px;height:56px;border-radius:18px;background:var(--accent);color:#fff;display:grid;place-items:center;margin:0 auto 2px}
+.plc-auth h1{font-family:'Fraunces',serif;font-weight:600;font-size:24px;text-align:center;margin:0}
+.plc-auth .sub{text-align:center;color:var(--soft);font-weight:600;font-size:13.5px;margin:2px 0 4px;line-height:1.45}
+.plc-err{color:var(--accent2);font-weight:700;font-size:13px;line-height:1.4}
+.plc-msg{color:#5d7a4e;font-weight:700;font-size:13px;line-height:1.4}
+.plc-link{background:none;border:none;color:var(--accent2);font-weight:700;font-size:13.5px;cursor:pointer;align-self:center}
+.plc-spinner{width:30px;height:30px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:70px auto}
+.plc-setup{max-width:460px;margin:0 auto}
+.plc-setup .plc-card{padding:22px}
+.plc-setup h1{font-family:'Fraunces',serif;font-weight:600;font-size:22px;margin:0 0 10px}
+.plc-setup ol{margin:0;padding-left:20px;line-height:1.7;font-weight:600;font-size:13.5px;color:#5d544a}
+.plc-setup code{background:var(--surface2);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:12.5px;font-family:ui-monospace,monospace}
+
+@keyframes plc-up{from{transform:translateY(40px);opacity:.4}to{transform:translateY(0);opacity:1}}
+@keyframes plc-fade{from{opacity:0}to{opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.plc-overlay,.plc-sheet,.plc-spinner{animation:none}}
+</style>
+</head>
+<body>
+<div class="plc-shell" id="app"></div>
+<button id="fab" aria-label="Добавить событие" style="display:none"></button>
+<div id="modal"></div>
+
+<script>
+/* ============================ ВСТАВЬТЕ СВОИ КЛЮЧИ ========================== */
+var SUPABASE_URL      = "https://ilvbaogbfjddxiimwoei.supabase.co/rest/v1/";
+var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsdmJhb2diZmpkZHhpaW13b2VpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MTA2ODEsImV4cCI6MjA5NzA4NjY4MX0.txsLF7W9njp1H5RkkLIWP1h4PoyEJ5CRejMOCELEM5g";
+/* ========================================================================== */
+
+var CATEGORIES = {
+  vet:{label:"Ветеринар",emoji:"🩺",color:"#5E9CA6"}, vaccine:{label:"Прививка",emoji:"💉",color:"#8E86C9"},
+  grooming:{label:"Груминг",emoji:"✂️",color:"#DD7E9B"}, food:{label:"Питание",emoji:"🦴",color:"#E2A04C"},
+  walk:{label:"Прогулка",emoji:"🐾",color:"#8AA17F"}, milestone:{label:"Важное",emoji:"🎂",color:"#E0736A"},
+  weight:{label:"Вес",emoji:"⚖️",color:"#6E91C4"}, note:{label:"Заметка",emoji:"📝",color:"#9C9183"}
+};
+var CAT_ORDER=Object.keys(CATEGORIES);
+var PET_EMOJIS=["🐶","🐱","🐰","🐹","🐦","🐢","🐠","🐴","🐷","🦎","🐍","🐈","🐕","🦜"];
+var MONTHS=["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+var MONTHS_GEN=["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+var WEEKDAYS=["Пн","Вт","Ср","Чт","Пт","Сб","Вс"];
+
+var SVG={
+  plus:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  x:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  pencil:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+  trash:'<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+  chevL:'<polyline points="15 18 9 12 15 6"/>', chevR:'<polyline points="9 18 15 12 9 6"/>',
+  heart:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l9 9 9-9a5.5 5.5 0 0 0 0-7.8Z"/>',
+  cake:'<path d="M4 21h16"/><path d="M4 21v-7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v7"/><path d="M4 16c1.5 1 3 1 4.5 0s3-1 4.5 0 3 1 4.5 0"/><path d="M12 8V5"/>',
+  calendar:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/>',
+  list:'<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/>',
+  logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>'
+};
+var PAW='<circle cx="6" cy="9" r="2"/><circle cx="10" cy="6" r="2"/><circle cx="14" cy="6" r="2"/><circle cx="18" cy="9" r="2"/><path d="M12 11c-3 0-5 2-5 4.5 0 2 1.7 2.5 3 2.5 .9 0 1.4-.4 2-.4s1.1.4 2 .4c1.3 0 3-.5 3-2.5C17 13 15 11 12 11Z"/>';
+function ic(name,size){ size=size||18;
+  if(name==='paw') return '<svg class="ic" width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="currentColor">'+PAW+'</svg>';
+  return '<svg class="ic" width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+SVG[name]+'</svg>'; }
+
+function uid(){ return Math.random().toString(36).slice(2,10); }
+function esc(s){ return (s||"").replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
+function startOfDay(d){ return new Date(d.getFullYear(),d.getMonth(),d.getDate()); }
+function parseISO(iso){ var p=String(iso).split("-"); return new Date(+p[0],+p[1]-1,+p[2]); }
+function pad(n){ return String(n).padStart(2,"0"); }
+function toISO(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+function todayISO(){ return toISO(new Date()); }
+function plural(n,one,few,many){ var a=n%10,b=n%100; if(a===1&&b!==11)return one; if(a>=2&&a<=4&&(b<10||b>=20))return few; return many; }
+function diffYMD(from,to){ var y=to.getFullYear()-from.getFullYear(),m=to.getMonth()-from.getMonth(),d=to.getDate()-from.getDate();
+  if(d<0){m--;d+=new Date(to.getFullYear(),to.getMonth(),0).getDate();} if(m<0){y--;m+=12;} return {y:y,m:m,d:d}; }
+function ageString(b){ if(!b)return""; var a=diffYMD(parseISO(b),startOfDay(new Date()));
+  if(a.y>0)return a.y+" "+plural(a.y,"год","года","лет")+(a.m?" "+a.m+" "+plural(a.m,"месяц","месяца","месяцев"):"");
+  if(a.m>0)return a.m+" "+plural(a.m,"месяц","месяца","месяцев")+(a.d?" "+a.d+" "+plural(a.d,"день","дня","дней"):"");
+  return a.d+" "+plural(a.d,"день","дня","дней"); }
+function relDate(iso){ var days=Math.round((startOfDay(parseISO(iso))-startOfDay(new Date()))/864e5);
+  if(days===0)return"сегодня"; if(days===1)return"завтра"; if(days===-1)return"вчера";
+  if(days>1)return"через "+days+" "+plural(days,"день","дня","дней"); var a=Math.abs(days); return a+" "+plural(a,"день","дня","дней")+" назад"; }
+function fmtDate(iso){ var d=parseISO(iso); return d.getDate()+" "+MONTHS_GEN[d.getMonth()]+" "+d.getFullYear(); }
+function hexA(hex,a){ var n=parseInt(hex.slice(1),16); return "rgba("+((n>>16)&255)+","+((n>>8)&255)+","+(n&255)+","+a+")"; }
+
+/* ------------------------------ app state -------------------------------- */
+var sb=null, user=null, appState="loading";
+var state={pets:[],events:[],activePetId:null};
+var view="timeline";
+var c0=new Date(); var calM={y:c0.getFullYear(),m:c0.getMonth()}; var selDay=null;
+var authMode="signin", authEmail="", authErr="", authMsg="";
+
+function activePet(){ return state.pets.filter(function(p){return p.id===state.activePetId;})[0] || state.pets[0] || null; }
+function eventsFor(id){ return state.events.filter(function(e){return e.pet_id===id;}).sort(function(a,b){return String(a.date).localeCompare(String(b.date));}); }
+
+/* ------------------------------- data layer ------------------------------ */
+async function loadData(){
+  appState="loading"; paint();
+  try{
+    var r1=await sb.from('pets').select('*').order('created_at');
+    var r2=await sb.from('events').select('*').order('date');
+    if(r1.error) throw r1.error; if(r2.error) throw r2.error;
+    state.pets=r1.data||[]; state.events=r2.data||[];
+    state.activePetId=(state.pets[0]&&state.pets[0].id)||null;
+    appState="app"; paint();
+  }catch(e){ appState="app"; paint(); alert("Не удалось загрузить данные: "+(e.message||e)); }
+}
+async function savePet(p){
+  var fields={name:p.name,emoji:p.emoji,species:p.species,breed:p.breed,birthday:p.birthday||null};
+  if(p.id){ var u=await sb.from('pets').update(fields).eq('id',p.id).select().single(); if(u.error)throw u.error;
+    state.pets=state.pets.map(function(x){return x.id===u.data.id?u.data:x;}); }
+  else { var i=await sb.from('pets').insert(fields).select().single(); if(i.error)throw i.error;
+    state.pets.push(i.data); state.activePetId=i.data.id; }
+  paint();
+}
+async function deletePet(id){ var d=await sb.from('pets').delete().eq('id',id); if(d.error)throw d.error;
+  state.pets=state.pets.filter(function(p){return p.id!==id;}); state.events=state.events.filter(function(e){return e.pet_id!==id;});
+  if(state.activePetId===id)state.activePetId=(state.pets[0]&&state.pets[0].id)||null; paint(); }
+async function saveEvent(ev){
+  if(ev.id){ var u=await sb.from('events').update({category:ev.category,title:ev.title,date:ev.date,notes:ev.notes}).eq('id',ev.id).select().single(); if(u.error)throw u.error;
+    state.events=state.events.map(function(x){return x.id===u.data.id?u.data:x;}); }
+  else { var i=await sb.from('events').insert({pet_id:state.activePetId,category:ev.category,title:ev.title,date:ev.date,notes:ev.notes}).select().single(); if(i.error)throw i.error;
+    state.events.push(i.data); }
+  paint();
+}
+async function deleteEvent(id){ var d=await sb.from('events').delete().eq('id',id); if(d.error)throw d.error;
+  state.events=state.events.filter(function(x){return x.id!==id;}); paint(); }
+
+/* --------------------------------- views --------------------------------- */
+function topBar(showLogout){ return '<div class="plc-top"><div class="plc-brand"><span class="plc-brand-mark">'+ic('paw',18)+'</span><span>Дневник жизни</span></div>'
+  +(showLogout?'<button class="plc-logout" data-act="logout">'+ic('logout',13)+' Выйти</button>':'')+'</div>'; }
+
+function welcome(){ return '<div class="plc-card plc-welcome"><div class="plc-welcome-emoji">🐾</div><h1>Заведём питомца</h1><p>Создайте профиль, отмечайте события и храните всю историю его жизни в одном месте.</p><button class="plc-btn" data-act="addPet">'+ic('plus',17)+' Добавить питомца</button></div>'; }
+
+function switcher(pets,active){ var h='<div class="plc-switch">';
+  pets.forEach(function(p){ h+='<button class="plc-chip'+(p.id===active.id?' is-on':'')+'" data-act="switchPet" data-id="'+p.id+'"><span>'+p.emoji+'</span>'+esc(p.name)+'</button>'; });
+  return h+'<button class="plc-chip plc-chip-add" data-act="addPet">'+ic('plus',15)+'</button></div>'; }
+
+function petCard(pet,events){ var h='<section class="plc-card plc-pet"><button class="plc-edit" data-act="editPet" aria-label="Изменить">'+ic('pencil',15)+'</button>';
+  h+='<div class="plc-pet-head"><div class="plc-avatar">'+pet.emoji+'</div><div class="plc-pet-id"><h1>'+esc(pet.name)+'</h1><p>'+(esc([pet.species,pet.breed].filter(Boolean).join(" · "))||"питомец")+'</p></div></div>';
+  if(pet.birthday){ h+='<div class="plc-age"><span class="plc-age-num">'+ageString(pet.birthday)+'</span><span class="plc-age-cap">'+ic('cake',13)+' '+fmtDate(pet.birthday)+'</span></div>';
+    var born=parseISO(pet.birthday),today=startOfDay(new Date()),span=Math.max(today-born,1);
+    h+='<div class="plc-ribbon" aria-hidden="true"><div class="plc-ribbon-line"></div><span class="plc-ribbon-end plc-ribbon-start">'+ic('cake',12)+'</span>';
+    events.forEach(function(e){ var d=parseISO(e.date); if(d<=today&&d>=born){ var pct=Math.min(99,Math.max(1,((d-born)/span)*100)); h+='<span class="plc-bead" style="left:'+pct+'%;background:'+CATEGORIES[e.category].color+'"></span>'; } });
+    h+='<span class="plc-ribbon-end plc-ribbon-now">'+ic('heart',12)+'</span></div>';
+  } else { h+='<p class="plc-hint">Добавьте дату рождения, чтобы видеть возраст и ленту жизни.</p>'; }
+  if(state.pets.length<=1) h+='<button class="plc-textbtn" data-act="addPet">'+ic('plus',14)+' Ещё питомец</button>';
+  return h+'</section>'; }
+
+function viewTabs(){ return '<div class="plc-viewtabs"><button class="'+(view==='timeline'?'is-on':'')+'" data-act="setView" data-view="timeline">'+ic('list',16)+' Лента</button><button class="'+(view==='calendar'?'is-on':'')+'" data-act="setView" data-view="calendar">'+ic('calendar',16)+' Календарь</button></div>'; }
+
+function eventRow(e,soon){ var c=CATEGORIES[e.category];
+  return '<div class="plc-card plc-event"><div class="plc-event-ic" style="background:'+hexA(c.color,.14)+'">'+c.emoji+'</div>'
+    +'<div class="plc-event-body"><div class="plc-event-top"><strong>'+(esc(e.title)||c.label)+'</strong><span class="plc-when'+(soon?' is-soon':'')+'">'+relDate(e.date)+'</span></div>'
+    +'<span class="plc-event-date">'+fmtDate(e.date)+'</span>'+(e.notes?'<p class="plc-event-notes">'+esc(e.notes)+'</p>':'')+'</div>'
+    +'<div class="plc-event-acts"><button data-act="editEvent" data-id="'+e.id+'" aria-label="Изменить">'+ic('pencil',14)+'</button><button data-act="delEvent" data-id="'+e.id+'" aria-label="Удалить">'+ic('trash',14)+'</button></div></div>'; }
+
+function timeline(events){
+  if(!events.length) return '<div class="plc-card plc-empty">'+ic('paw',30)+'<p>Здесь будет история жизни питомца.</p><button class="plc-btn" data-act="addEvent">'+ic('plus',16)+' Первое событие</button></div>';
+  var today=startOfDay(new Date());
+  var up=events.filter(function(e){return parseISO(e.date)>=today;}); var past=events.filter(function(e){return parseISO(e.date)<today;}).reverse();
+  var h='<div class="plc-stack">';
+  if(up.length){ h+='<h2 class="plc-sec">'+ic('clock',15)+' Впереди</h2>'; up.forEach(function(e){h+=eventRow(e,true);}); }
+  if(past.length){ h+='<h2 class="plc-sec">'+ic('heart',15)+' Прожито</h2>'; past.forEach(function(e){h+=eventRow(e,false);}); }
+  return h+'</div>'; }
+
+function calendar(events){
+  var y=calM.y,m=calM.m,first=new Date(y,m,1),offset=(first.getDay()+6)%7,daysIn=new Date(y,m+1,0).getDate();
+  var byDay={}; events.forEach(function(e){ var d=parseISO(e.date); if(d.getFullYear()===y&&d.getMonth()===m)(byDay[d.getDate()]=byDay[d.getDate()]||[]).push(e); });
+  var td=new Date(); function isToday(d){ return td.getFullYear()===y&&td.getMonth()===m&&td.getDate()===d; }
+  var h='<div class="plc-stack"><div class="plc-card plc-cal"><div class="plc-cal-head"><button data-act="calPrev" aria-label="Назад">'+ic('chevL',18)+'</button><span>'+MONTHS[m]+' '+y+'</span><button data-act="calNext" aria-label="Вперёд">'+ic('chevR',18)+'</button></div>';
+  h+='<div class="plc-cal-grid plc-cal-wd">'; WEEKDAYS.forEach(function(w){h+='<span class="plc-wd">'+w+'</span>';}); h+='</div><div class="plc-cal-grid">';
+  for(var i=0;i<offset;i++) h+='<span class="plc-day is-empty"></span>';
+  for(var d=1;d<=daysIn;d++){ var evs=byDay[d]||[],dots=''; evs.slice(0,3).forEach(function(e){dots+='<i style="background:'+CATEGORIES[e.category].color+'"></i>';});
+    h+='<button class="plc-day'+(isToday(d)?' is-today':'')+(selDay===d?' is-sel':'')+'" data-act="selDay" data-day="'+d+'"><span class="plc-day-n">'+d+'</span><span class="plc-dots">'+dots+'</span></button>'; }
+  h+='</div></div>';
+  if(selDay){ var iso=toISO(new Date(y,m,selDay)),de=byDay[selDay]||[];
+    h+='<div class="plc-stack"><div class="plc-daybar"><span>'+selDay+' '+MONTHS_GEN[m]+'</span><button class="plc-btn plc-btn-sm" data-act="addEvent" data-date="'+iso+'">'+ic('plus',15)+' Добавить</button></div>';
+    if(de.length) de.forEach(function(e){h+=eventRow(e,false);}); else h+='<p class="plc-hint plc-hint-c">В этот день пока ничего не отмечено.</p>'; h+='</div>'; }
+  return h+'</div>'; }
+
+function setupScreen(){ return '<div class="plc-setup">'+topBar(false)+'<div class="plc-card"><h1>Почти готово</h1><ol>'
+  +'<li>Создайте бесплатный проект на <code>supabase.com</code></li>'
+  +'<li>В <code>SQL Editor</code> запустите SQL-код из комментария в начале файла</li>'
+  +'<li>В <code>Settings → API</code> скопируйте Project URL и ключ <code>anon public</code></li>'
+  +'<li>Вставьте их в файл в <code>SUPABASE_URL</code> и <code>SUPABASE_ANON_KEY</code></li>'
+  +'<li>Сохраните файл и обновите страницу</li></ol></div></div>'; }
+
+function authScreen(){ return '<div class="plc-auth"><div class="plc-auth-logo">'+ic('paw',24)+'</div><h1>Дневник жизни</h1>'
+  +'<p class="sub">'+(authMode==='signup'?'Создайте аккаунт — записи будут сохраняться и появятся на любом устройстве.':'Войдите, чтобы открыть свои записи.')+'</p>'
+  +'<div class="plc-card" style="padding:18px;display:flex;flex-direction:column;gap:12px">'
+  +'<div class="plc-field"><label class="plc-lbl">Почта</label><input id="auth_email" class="plc-input" type="email" autocomplete="email" inputmode="email" placeholder="you@example.com" value="'+esc(authEmail)+'"></div>'
+  +'<div class="plc-field"><label class="plc-lbl">Пароль</label><input id="auth_pass" class="plc-input" type="password" autocomplete="'+(authMode==='signup'?'new-password':'current-password')+'" placeholder="не короче 6 символов"></div>'
+  +(authErr?'<div class="plc-err">'+esc(authErr)+'</div>':'')+(authMsg?'<div class="plc-msg">'+esc(authMsg)+'</div>':'')
+  +'<button class="plc-btn" id="auth_btn">'+(authMode==='signup'?'Создать аккаунт':'Войти')+'</button></div>'
+  +'<button class="plc-link" id="auth_toggle">'+(authMode==='signup'?'У меня уже есть аккаунт':'Создать новый аккаунт')+'</button></div>'; }
+
+/* --------------------------------- paint --------------------------------- */
+function paint(){
+  var app=document.getElementById('app'),fab=document.getElementById('fab');
+  if(appState==='setup'){ app.innerHTML=setupScreen(); fab.style.display='none'; return; }
+  if(appState==='loading'){ app.innerHTML='<div class="plc-spinner"></div>'; fab.style.display='none'; return; }
+  if(appState==='auth'){ app.innerHTML=authScreen(); mountAuth(); fab.style.display='none'; return; }
+  var active=activePet(); if(active)state.activePetId=active.id;
+  var html=topBar(true);
+  if(!active){ html+=welcome(); }
+  else { var events=eventsFor(active.id); if(state.pets.length>1)html+=switcher(state.pets,active); html+=petCard(active,events)+viewTabs()+(view==='timeline'?timeline(events):calendar(events)); }
+  app.innerHTML=html; fab.style.display=active?'grid':'none';
+}
+
+/* ----------------------------------- auth -------------------------------- */
+function mountAuth(){
+  document.getElementById('auth_toggle').onclick=function(){ authEmail=document.getElementById('auth_email').value; authMode=authMode==='signup'?'signin':'signup'; authErr=''; authMsg=''; paint(); };
+  document.getElementById('auth_email').oninput=function(e){ authEmail=e.target.value; };
+  document.getElementById('auth_btn').onclick=doAuth;
+}
+function authHuman(msg){ msg=msg||''; var l=msg.toLowerCase();
+  if(l.indexOf('invalid login')>=0) return "Неверная почта или пароль.";
+  if(l.indexOf('already registered')>=0||l.indexOf('already been registered')>=0) return "Этот адрес уже зарегистрирован — попробуйте войти.";
+  if(l.indexOf('at least 6')>=0) return "Пароль должен быть не короче 6 символов.";
+  if(l.indexOf('email not confirmed')>=0) return "Сначала подтвердите адрес по ссылке из письма.";
+  return msg||"Что-то пошло не так."; }
+async function doAuth(){
+  var email=(document.getElementById('auth_email').value||'').trim();
+  var pass=document.getElementById('auth_pass').value||'';
+  authErr=''; authMsg='';
+  if(email.indexOf('@')<0){ authErr="Введите корректную почту."; paint(); return; }
+  if(pass.length<6){ authErr="Пароль должен быть не короче 6 символов."; paint(); return; }
+  var btn=document.getElementById('auth_btn'); btn.disabled=true; btn.textContent="Подождите…";
+  try{
+    if(authMode==='signup'){
+      var r=await sb.auth.signUp({email:email,password:pass}); if(r.error)throw r.error;
+      if(!r.data.session){ authMode='signin'; authMsg="Аккаунт создан. Подтвердите адрес по ссылке из письма и войдите."; authEmail=email; paint(); return; }
+    } else {
+      var s=await sb.auth.signInWithPassword({email:email,password:pass}); if(s.error)throw s.error;
+    }
+    /* успех → onAuthStateChange покажет приложение */
+  }catch(e){ authErr=authHuman(e.message); authEmail=email; paint(); }
+}
+
+/* ------------------------------- interaction ----------------------------- */
+document.getElementById('app').addEventListener('click',function(e){
+  var t=e.target.closest('[data-act]'); if(!t)return; var a=t.getAttribute('data-act');
+  if(a==='addPet') openPetForm(null);
+  else if(a==='editPet') openPetForm(activePet());
+  else if(a==='switchPet'){ state.activePetId=t.getAttribute('data-id'); selDay=null; paint(); }
+  else if(a==='setView'){ view=t.getAttribute('data-view'); selDay=null; paint(); }
+  else if(a==='calPrev'){ var p=new Date(calM.y,calM.m-1,1); calM={y:p.getFullYear(),m:p.getMonth()}; selDay=null; paint(); }
+  else if(a==='calNext'){ var n=new Date(calM.y,calM.m+1,1); calM={y:n.getFullYear(),m:n.getMonth()}; selDay=null; paint(); }
+  else if(a==='selDay'){ var d=+t.getAttribute('data-day'); selDay=selDay===d?null:d; paint(); }
+  else if(a==='addEvent') openEventForm({date:t.getAttribute('data-date')||todayISO()});
+  else if(a==='editEvent') openEventForm({event:state.events.filter(function(x){return x.id===t.getAttribute('data-id');})[0]});
+  else if(a==='delEvent'){ if(confirm('Удалить это событие?')) deleteEvent(t.getAttribute('data-id')).catch(function(err){alert('Не удалось удалить: '+(err.message||err));}); }
+  else if(a==='logout') sb.auth.signOut();
+});
+document.getElementById('fab').addEventListener('click',function(){ openEventForm({date:todayISO()}); });
+
+/* --------------------------------- modals -------------------------------- */
+function openSheet(title,bodyHTML,onMount){
+  var m=document.getElementById('modal');
+  m.innerHTML='<div class="plc-overlay" id="ov"><div class="plc-sheet"><div class="plc-sheet-grab"></div><div class="plc-sheet-head"><h3>'+esc(title)+'</h3><button class="plc-iconbtn" id="closeBtn" aria-label="Закрыть">'+ic('x')+'</button></div><div class="plc-sheet-body">'+bodyHTML+'</div></div></div>';
+  document.getElementById('ov').addEventListener('click',function(e){ if(e.target.id==='ov')closeSheet(); });
+  document.getElementById('closeBtn').addEventListener('click',closeSheet); if(onMount)onMount(); }
+function closeSheet(){ document.getElementById('modal').innerHTML=''; }
+function field(id,label,value,type,ph){ return '<div class="plc-field"><label class="plc-lbl">'+label+'</label><input id="'+id+'" class="plc-input" type="'+(type||'text')+'" value="'+esc(value||'')+'" placeholder="'+esc(ph||'')+'"></div>'; }
+
+async function withSaving(btn,fn){ var old=btn.textContent; btn.disabled=true; btn.textContent='Сохранение…';
+  try{ await fn(); closeSheet(); }catch(e){ alert('Не удалось сохранить: '+(e.message||e)); btn.disabled=false; btn.textContent=old; } }
+
+function openPetForm(pet){
+  var emoji=pet?pet.emoji:'🐶';
+  var body='<label class="plc-lbl">Аватар</label><div class="plc-emoji-grid" id="emojiGrid">'
+    +PET_EMOJIS.map(function(e){return '<button type="button" class="plc-emoji'+(e===emoji?' is-on':'')+'" data-emoji="'+e+'">'+e+'</button>';}).join('')+'</div>'
+    +field('f_name','Кличка',pet?pet.name:'','text','Например, Барсик')
+    +'<div class="plc-row2">'+field('f_species','Вид',pet?pet.species:'','text','Кот, собака…')+field('f_breed','Порода',pet?pet.breed:'','text','необязательно')+'</div>'
+    +field('f_birthday','Дата рождения',pet?pet.birthday:'','date')
+    +'<div class="plc-sheet-acts">'+(pet?'<button class="plc-btn plc-btn-ghost plc-btn-danger" id="delBtn">'+ic('trash',16)+' Удалить</button>':'')+'<button class="plc-btn" id="saveBtn">Сохранить</button></div>';
+  openSheet(pet?'Профиль питомца':'Новый питомец',body,function(){
+    var grid=document.getElementById('emojiGrid');
+    grid.addEventListener('click',function(e){ var b=e.target.closest('[data-emoji]'); if(!b)return; emoji=b.getAttribute('data-emoji');
+      grid.querySelectorAll('.plc-emoji').forEach(function(x){x.classList.toggle('is-on',x.getAttribute('data-emoji')===emoji);}); });
+    document.getElementById('saveBtn').onclick=function(){
+      var name=document.getElementById('f_name').value.trim(); if(!name){document.getElementById('f_name').focus();return;}
+      var p={emoji:emoji,name:name,species:document.getElementById('f_species').value.trim(),breed:document.getElementById('f_breed').value.trim(),birthday:document.getElementById('f_birthday').value};
+      if(pet)p.id=pet.id; withSaving(this,function(){return savePet(p);}); };
+    if(pet)document.getElementById('delBtn').onclick=function(){ if(confirm('Удалить «'+pet.name+'» и все его записи?')) withSaving(this,function(){return deletePet(pet.id);}); };
+  });
+}
+function openEventForm(opt){ opt=opt||{}; var ev=opt.event||null; var cat=ev?ev.category:'vet';
+  function catGrid(){ return CAT_ORDER.map(function(k){ var c=CATEGORIES[k],on=k===cat;
+    return '<button type="button" class="plc-cat'+(on?' is-on':'')+'" data-cat="'+k+'" style="'+(on?'background:'+hexA(c.color,.16)+';border-color:'+c.color+';color:'+c.color:'')+'">'+c.emoji+' '+c.label+'</button>'; }).join(''); }
+  var body='<label class="plc-lbl">Категория</label><div class="plc-cat-grid" id="catGrid">'+catGrid()+'</div>'
+    +field('f_title','Название',ev?ev.title:'','text',CATEGORIES[cat].label)
+    +field('f_date','Дата',ev?ev.date:(opt.date||todayISO()),'date')
+    +'<div class="plc-field"><label class="plc-lbl">Заметка</label><textarea id="f_notes" class="plc-input plc-area" placeholder="Детали, наблюдения, что запомнить…">'+esc(ev?ev.notes:'')+'</textarea></div>'
+    +'<div class="plc-sheet-acts">'+(ev?'<button class="plc-btn plc-btn-ghost plc-btn-danger" id="delBtn">'+ic('trash',16)+' Удалить</button>':'')+'<button class="plc-btn" id="saveBtn">Сохранить</button></div>';
+  openSheet(ev?'Событие':'Новое событие',body,function(){
+    var grid=document.getElementById('catGrid');
+    grid.addEventListener('click',function(e){ var b=e.target.closest('[data-cat]'); if(!b)return; cat=b.getAttribute('data-cat'); grid.innerHTML=catGrid();
+      var ph=document.getElementById('f_title'); if(ph&&!ph.value)ph.setAttribute('placeholder',CATEGORIES[cat].label); });
+    document.getElementById('saveBtn').onclick=function(){
+      var date=document.getElementById('f_date').value; if(!date){document.getElementById('f_date').focus();return;}
+      var data={category:cat,title:document.getElementById('f_title').value.trim(),date:date,notes:document.getElementById('f_notes').value.trim()};
+      if(ev){data.id=ev.id;} withSaving(this,function(){return saveEvent(data);}); };
+    if(ev)document.getElementById('delBtn').onclick=function(){ if(confirm('Удалить это событие?')) withSaving(this,function(){return deleteEvent(ev.id);}); };
+  });
+}
+
+/* -------------------------------- app icon ------------------------------- */
+function makeIcon(){ try{
+  var c=document.createElement('canvas'); c.width=180; c.height=180; var x=c.getContext('2d'); var r=40;
+  x.fillStyle='#E0736A'; x.beginPath(); x.moveTo(r,0); x.lineTo(180-r,0); x.arcTo(180,0,180,r,r); x.lineTo(180,180-r); x.arcTo(180,180,180-r,180,r);
+  x.lineTo(r,180); x.arcTo(0,180,0,180-r,r); x.lineTo(0,r); x.arcTo(0,0,r,0,r); x.closePath(); x.fill();
+  x.fillStyle='#fff'; x.beginPath(); x.ellipse(90,114,30,25,0,0,7); x.fill();
+  [[58,82,15],[80,62,16],[100,62,16],[122,82,15]].forEach(function(t){x.beginPath();x.arc(t[0],t[1],t[2],0,7);x.fill();});
+  var url=c.toDataURL('image/png');
+  var l=document.createElement('link'); l.rel='apple-touch-icon'; l.href=url; document.head.appendChild(l);
+  var f=document.createElement('link'); f.rel='icon'; f.href=url; document.head.appendChild(f);
+}catch(e){} }
+
+/* ----------------------------------- init -------------------------------- */
+async function init(){
+  makeIcon();
+  if(SUPABASE_URL.indexOf('http')!==0 || SUPABASE_URL.indexOf('PASTE_')>=0 || SUPABASE_ANON_KEY.indexOf('PASTE_')>=0){ appState='setup'; paint(); return; }
+  if(typeof supabase==='undefined'){ document.getElementById('app').innerHTML='<div class="plc-card" style="padding:20px"><p class="plc-err">Не удалось загрузить библиотеку Supabase. Проверьте подключение к интернету.</p></div>'; return; }
+  sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+  var g=await sb.auth.getSession();
+  if(g.data.session){ user=g.data.session.user; await loadData(); } else { appState='auth'; paint(); }
+  sb.auth.onAuthStateChange(function(event,session){
+    if(event==='SIGNED_IN'){ if(!user||user.id!==session.user.id){ user=session.user; loadData(); } }
+    else if(event==='SIGNED_OUT'){ user=null; state={pets:[],events:[],activePetId:null}; appState='auth'; authMsg=''; authErr=''; paint(); }
+  });
+}
+init();
+</script>
+</body>
+</html>
