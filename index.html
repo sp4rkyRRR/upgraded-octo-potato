@@ -21,21 +21,17 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
-body{
-  font-family:'Nunito',system-ui,-apple-system,sans-serif;color:var(--ink);
-  background:var(--bg);min-height:100vh;-webkit-font-smoothing:antialiased;
-  -webkit-tap-highlight-color:transparent;
-}
+body{font-family:'Nunito',system-ui,-apple-system,sans-serif;color:var(--ink);background:var(--bg);min-height:100vh;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
 .ic{display:block}
 button{font-family:inherit}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
-.plc-shell{max-width:460px;margin:0 auto;display:flex;flex-direction:column;gap:14px;
-  padding:calc(env(safe-area-inset-top) + 14px) 16px calc(env(safe-area-inset-bottom) + 110px)}
+.plc-shell{max-width:460px;margin:0 auto;display:flex;flex-direction:column;gap:14px;padding:calc(env(safe-area-inset-top) + 14px) 16px calc(env(safe-area-inset-bottom) + 110px)}
 
-.plc-top{display:flex;align-items:center;justify-content:center;padding:4px 0 2px}
+.plc-top{position:relative;display:flex;align-items:center;justify-content:center;padding:4px 0 2px}
 .plc-brand{display:flex;align-items:center;gap:8px;font-family:'Fraunces',serif;font-size:19px;font-weight:600}
 .plc-brand-mark{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:var(--accent);color:#fff}
+.plc-logout{position:absolute;right:0;top:50%;transform:translateY(-50%);background:var(--surface);border:1px solid var(--line);color:var(--soft);border-radius:999px;padding:6px 11px;font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px}
 
 .plc-card{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);position:relative}
 .plc-edit{position:absolute;top:14px;right:14px;width:30px;height:30px;border:none;border-radius:9px;background:var(--surface2);color:var(--soft);display:grid;place-items:center;cursor:pointer}
@@ -111,13 +107,12 @@ button{font-family:inherit}
 .plc-welcome p{margin:0 0 6px;color:var(--soft);font-weight:600;font-size:14px;line-height:1.5;max-width:280px}
 
 .plc-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;background:var(--accent);color:#fff;border:none;border-radius:13px;padding:12px 18px;font-weight:800;font-size:14.5px;cursor:pointer;box-shadow:0 6px 14px -6px rgba(224,115,106,.7)}
-.plc-btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.plc-btn:disabled{opacity:.55;cursor:default;box-shadow:none}
 .plc-btn-sm{padding:8px 13px;font-size:13px;border-radius:11px}
 .plc-btn-ghost{background:var(--surface2);color:var(--ink);box-shadow:none}
 .plc-btn-danger{color:var(--accent2)}
 
-#fab{position:fixed;width:56px;height:56px;border-radius:18px;background:var(--accent);color:#fff;border:none;display:grid;place-items:center;cursor:pointer;box-shadow:0 12px 24px -8px rgba(224,115,106,.9);z-index:20;
-  right:max(20px, env(safe-area-inset-right));bottom:calc(env(safe-area-inset-bottom) + 22px)}
+#fab{position:fixed;width:56px;height:56px;border-radius:18px;background:var(--accent);color:#fff;border:none;display:grid;place-items:center;cursor:pointer;box-shadow:0 12px 24px -8px rgba(224,115,106,.9);z-index:20;right:max(20px, env(safe-area-inset-right));bottom:calc(env(safe-area-inset-bottom) + 22px)}
 
 .plc-overlay{position:fixed;inset:0;background:rgba(58,51,43,.42);display:flex;align-items:flex-end;justify-content:center;z-index:40;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);animation:plc-fade .18s ease}
 .plc-sheet{background:var(--surface);width:100%;max-width:460px;border-radius:26px 26px 0 0;padding:8px 18px calc(env(safe-area-inset-bottom) + 22px);max-height:92vh;overflow-y:auto;animation:plc-up .26s cubic-bezier(.2,.9,.3,1)}
@@ -144,62 +139,64 @@ button{font-family:inherit}
 .plc-cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .plc-cat{display:flex;align-items:center;gap:7px;border:1.5px solid var(--line);background:var(--surface2);border-radius:12px;padding:10px 11px;font-weight:700;font-size:13.5px;color:var(--soft);cursor:pointer}
 
+/* lock screen */
+.plc-auth{max-width:380px;margin:0 auto;padding-top:7vh;display:flex;flex-direction:column;gap:14px}
+.plc-auth-logo{width:58px;height:58px;border-radius:18px;background:var(--accent);color:#fff;display:grid;place-items:center;margin:0 auto 2px}
+.plc-auth h1{font-family:'Fraunces',serif;font-weight:600;font-size:24px;text-align:center;margin:0}
+.plc-auth .sub{text-align:center;color:var(--soft);font-weight:600;font-size:13.5px;margin:2px 0 4px;line-height:1.45}
+.plc-err{color:var(--accent2);font-weight:700;font-size:13px;line-height:1.4}
+.plc-note{color:var(--soft);font-weight:600;font-size:12px;line-height:1.45;text-align:center}
+.plc-link{background:none;border:none;color:var(--soft);font-weight:700;font-size:13px;cursor:pointer;align-self:center;text-decoration:underline}
+.plc-spinner{width:30px;height:30px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:70px auto}
+
 @keyframes plc-up{from{transform:translateY(40px);opacity:.4}to{transform:translateY(0);opacity:1}}
 @keyframes plc-fade{from{opacity:0}to{opacity:1}}
-@media(prefers-reduced-motion:reduce){.plc-overlay,.plc-sheet{animation:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.plc-overlay,.plc-sheet,.plc-spinner{animation:none}}
 </style>
 </head>
 <body>
 <div class="plc-shell" id="app"></div>
-<button id="fab" aria-label="Добавить событие"></button>
+<button id="fab" aria-label="Добавить событие" style="display:none"></button>
 <div id="modal"></div>
 
 <script>
-/* --------------------------------- config --------------------------------- */
-var KEY = "petLifeCalendar.v1";
+var KEY="petLifeCalendar.locked.v1";
 
-var CATEGORIES = {
-  vet:       { label:"Ветеринар", emoji:"🩺", color:"#5E9CA6" },
-  vaccine:   { label:"Прививка",  emoji:"💉", color:"#8E86C9" },
-  grooming:  { label:"Груминг",   emoji:"✂️", color:"#DD7E9B" },
-  food:      { label:"Питание",   emoji:"🦴", color:"#E2A04C" },
-  walk:      { label:"Прогулка",  emoji:"🐾", color:"#8AA17F" },
-  milestone: { label:"Важное",    emoji:"🎂", color:"#E0736A" },
-  weight:    { label:"Вес",       emoji:"⚖️", color:"#6E91C4" },
-  note:      { label:"Заметка",   emoji:"📝", color:"#9C9183" },
+var CATEGORIES={
+  vet:{label:"Ветеринар",emoji:"🩺",color:"#5E9CA6"}, vaccine:{label:"Прививка",emoji:"💉",color:"#8E86C9"},
+  grooming:{label:"Груминг",emoji:"✂️",color:"#DD7E9B"}, food:{label:"Питание",emoji:"🦴",color:"#E2A04C"},
+  walk:{label:"Прогулка",emoji:"🐾",color:"#8AA17F"}, milestone:{label:"Важное",emoji:"🎂",color:"#E0736A"},
+  weight:{label:"Вес",emoji:"⚖️",color:"#6E91C4"}, note:{label:"Заметка",emoji:"📝",color:"#9C9183"}
 };
-var CAT_ORDER = Object.keys(CATEGORIES);
-var PET_EMOJIS = ["🐶","🐱","🐰","🐹","🐦","🐢","🐠","🐴","🐷","🦎","🐍","🐈","🐕","🦜"];
-var MONTHS = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
-var MONTHS_GEN = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
-var WEEKDAYS = ["Пн","Вт","Ср","Чт","Пт","Сб","Вс"];
+var CAT_ORDER=Object.keys(CATEGORIES);
+var PET_EMOJIS=["🐶","🐱","🐰","🐹","🐦","🐢","🐠","🐴","🐷","🦎","🐍","🐈","🐕","🦜"];
+var MONTHS=["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+var MONTHS_GEN=["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+var WEEKDAYS=["Пн","Вт","Ср","Чт","Пт","Сб","Вс"];
 
-var SVG = {
+var SVG={
   plus:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
   x:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
   pencil:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
   trash:'<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
-  chevL:'<polyline points="15 18 9 12 15 6"/>',
-  chevR:'<polyline points="9 18 15 12 9 6"/>',
+  chevL:'<polyline points="15 18 9 12 15 6"/>', chevR:'<polyline points="9 18 15 12 9 6"/>',
   heart:'<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l9 9 9-9a5.5 5.5 0 0 0 0-7.8Z"/>',
   cake:'<path d="M4 21h16"/><path d="M4 21v-7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v7"/><path d="M4 16c1.5 1 3 1 4.5 0s3-1 4.5 0 3 1 4.5 0"/><path d="M12 8V5"/>',
   calendar:'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/>',
   list:'<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',
-  clock:'<circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/>'
+  clock:'<circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/>',
+  lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>'
 };
 var PAW='<circle cx="6" cy="9" r="2"/><circle cx="10" cy="6" r="2"/><circle cx="14" cy="6" r="2"/><circle cx="18" cy="9" r="2"/><path d="M12 11c-3 0-5 2-5 4.5 0 2 1.7 2.5 3 2.5 .9 0 1.4-.4 2-.4s1.1.4 2 .4c1.3 0 3-.5 3-2.5C17 13 15 11 12 11Z"/>';
-
-function ic(name, size){
-  size = size || 18;
+function ic(name,size){ size=size||18;
   if(name==='paw') return '<svg class="ic" width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="currentColor">'+PAW+'</svg>';
-  return '<svg class="ic" width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+SVG[name]+'</svg>';
-}
+  return '<svg class="ic" width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+SVG[name]+'</svg>'; }
 
-/* --------------------------------- helpers -------------------------------- */
 function uid(){ return Math.random().toString(36).slice(2,10); }
 function esc(s){ return (s||"").replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
 function startOfDay(d){ return new Date(d.getFullYear(),d.getMonth(),d.getDate()); }
-function parseISO(iso){ var p=iso.split("-"); return new Date(+p[0],+p[1]-1,+p[2]); }
+function parseISO(iso){ var p=String(iso).split("-"); return new Date(+p[0],+p[1]-1,+p[2]); }
 function pad(n){ return String(n).padStart(2,"0"); }
 function toISO(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
 function todayISO(){ return toISO(new Date()); }
@@ -212,128 +209,182 @@ function ageString(b){ if(!b)return""; var a=diffYMD(parseISO(b),startOfDay(new 
   return a.d+" "+plural(a.d,"день","дня","дней"); }
 function relDate(iso){ var days=Math.round((startOfDay(parseISO(iso))-startOfDay(new Date()))/864e5);
   if(days===0)return"сегодня"; if(days===1)return"завтра"; if(days===-1)return"вчера";
-  if(days>1)return"через "+days+" "+plural(days,"день","дня","дней");
-  var a=Math.abs(days); return a+" "+plural(a,"день","дня","дней")+" назад"; }
+  if(days>1)return"через "+days+" "+plural(days,"день","дня","дней"); var a=Math.abs(days); return a+" "+plural(a,"день","дня","дней")+" назад"; }
 function fmtDate(iso){ var d=parseISO(iso); return d.getDate()+" "+MONTHS_GEN[d.getMonth()]+" "+d.getFullYear(); }
 function hexA(hex,a){ var n=parseInt(hex.slice(1),16); return "rgba("+((n>>16)&255)+","+((n>>8)&255)+","+(n&255)+","+a+")"; }
 
-/* ------------------------------- storage I/O ------------------------------ */
-function load(){ try{ var s=localStorage.getItem(KEY); if(s)return JSON.parse(s); }catch(e){} return {pets:[],events:[],activePetId:null}; }
-function save(){ try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){} }
+/* -------------------------- шифрование (Web Crypto) ----------------------- */
+function b64(bytes){ var s=''; for(var i=0;i<bytes.length;i++)s+=String.fromCharCode(bytes[i]); return btoa(s); }
+function unb64(str){ var bin=atob(str),a=new Uint8Array(bin.length); for(var i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i); return a; }
+async function deriveKey(password,salt){
+  var base=await crypto.subtle.importKey('raw',new TextEncoder().encode(password),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt:salt,iterations:150000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+}
+async function persist(){
+  try{ var iv=crypto.getRandomValues(new Uint8Array(12));
+    var ct=await crypto.subtle.encrypt({name:'AES-GCM',iv:iv},cryptoKey,new TextEncoder().encode(JSON.stringify(state)));
+    localStorage.setItem(KEY,JSON.stringify({v:1,salt:b64(saltBytes),iv:b64(iv),data:b64(new Uint8Array(ct))}));
+  }catch(e){ alert('Не удалось сохранить: '+(e.message||e)); }
+}
+async function tryDecrypt(password){
+  var s=JSON.parse(localStorage.getItem(KEY)); var salt=unb64(s.salt),iv=unb64(s.iv),data=unb64(s.data);
+  var key=await deriveKey(password,salt);
+  var pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:iv},key,data); /* бросит ошибку при неверном пароле */
+  cryptoKey=key; saltBytes=salt; return JSON.parse(new TextDecoder().decode(pt));
+}
 
 /* --------------------------------- state ---------------------------------- */
-var state = load();
-var view = "timeline";
-var now0 = new Date();
-var calM = { y:now0.getFullYear(), m:now0.getMonth() };
-var selDay = null;
+var cryptoKey=null, saltBytes=null, appState="loading";
+var state={pets:[],events:[],activePetId:null};
+var view="timeline";
+var c0=new Date(); var calM={y:c0.getFullYear(),m:c0.getMonth()}; var selDay=null;
+var lockErr="";
 
-function commit(){ save(); render(); }
+function commit(){ paint(); persist(); }
 function activePet(){ return state.pets.filter(function(p){return p.id===state.activePetId;})[0] || state.pets[0] || null; }
-function eventsFor(id){ return state.events.filter(function(e){return e.petId===id;}).sort(function(a,b){return a.date.localeCompare(b.date);}); }
+function eventsFor(id){ return state.events.filter(function(e){return e.petId===id;}).sort(function(a,b){return String(a.date).localeCompare(String(b.date));}); }
 
-/* ------------------------------- mutations -------------------------------- */
 function savePet(p){ if(p.id){ state.pets=state.pets.map(function(x){return x.id===p.id?p:x;}); } else { p.id=uid(); state.pets.push(p); state.activePetId=p.id; } commit(); }
 function deletePet(id){ state.pets=state.pets.filter(function(p){return p.id!==id;}); state.events=state.events.filter(function(e){return e.petId!==id;}); if(state.activePetId===id)state.activePetId=(state.pets[0]&&state.pets[0].id)||null; commit(); }
 function saveEvent(ev){ if(ev.id){ state.events=state.events.map(function(x){return x.id===ev.id?ev:x;}); } else { ev.id=uid(); ev.petId=state.activePetId; state.events.push(ev); } commit(); }
+function deleteEvent(id){ state.events=state.events.filter(function(x){return x.id!==id;}); commit(); }
 
-/* --------------------------------- render --------------------------------- */
-function topBar(){ return '<div class="plc-top"><div class="plc-brand"><span class="plc-brand-mark">'+ic('paw',18)+'</span><span>Дневник жизни</span></div></div>'; }
-
+/* --------------------------------- views ---------------------------------- */
+function topBar(showLock){ return '<div class="plc-top"><div class="plc-brand"><span class="plc-brand-mark">'+ic('paw',18)+'</span><span>Дневник жизни</span></div>'
+  +(showLock?'<button class="plc-logout" data-act="lock">'+ic('lock',13)+' Закрыть</button>':'')+'</div>'; }
 function welcome(){ return '<div class="plc-card plc-welcome"><div class="plc-welcome-emoji">🐾</div><h1>Заведём питомца</h1><p>Создайте профиль, отмечайте события и храните всю историю его жизни в одном месте.</p><button class="plc-btn" data-act="addPet">'+ic('plus',17)+' Добавить питомца</button></div>'; }
-
 function switcher(pets,active){ var h='<div class="plc-switch">';
   pets.forEach(function(p){ h+='<button class="plc-chip'+(p.id===active.id?' is-on':'')+'" data-act="switchPet" data-id="'+p.id+'"><span>'+p.emoji+'</span>'+esc(p.name)+'</button>'; });
-  h+='<button class="plc-chip plc-chip-add" data-act="addPet">'+ic('plus',15)+'</button></div>'; return h; }
-
-function petCard(pet,events){
-  var age=ageString(pet.birthday);
-  var h='<section class="plc-card plc-pet"><button class="plc-edit" data-act="editPet" aria-label="Изменить">'+ic('pencil',15)+'</button>';
+  return h+'<button class="plc-chip plc-chip-add" data-act="addPet">'+ic('plus',15)+'</button></div>'; }
+function petCard(pet,events){ var h='<section class="plc-card plc-pet"><button class="plc-edit" data-act="editPet" aria-label="Изменить">'+ic('pencil',15)+'</button>';
   h+='<div class="plc-pet-head"><div class="plc-avatar">'+pet.emoji+'</div><div class="plc-pet-id"><h1>'+esc(pet.name)+'</h1><p>'+(esc([pet.species,pet.breed].filter(Boolean).join(" · "))||"питомец")+'</p></div></div>';
-  if(pet.birthday){
-    h+='<div class="plc-age"><span class="plc-age-num">'+age+'</span><span class="plc-age-cap">'+ic('cake',13)+' '+fmtDate(pet.birthday)+'</span></div>';
-    var born=parseISO(pet.birthday), today=startOfDay(new Date()), span=Math.max(today-born,1);
+  if(pet.birthday){ h+='<div class="plc-age"><span class="plc-age-num">'+ageString(pet.birthday)+'</span><span class="plc-age-cap">'+ic('cake',13)+' '+fmtDate(pet.birthday)+'</span></div>';
+    var born=parseISO(pet.birthday),today=startOfDay(new Date()),span=Math.max(today-born,1);
     h+='<div class="plc-ribbon" aria-hidden="true"><div class="plc-ribbon-line"></div><span class="plc-ribbon-end plc-ribbon-start">'+ic('cake',12)+'</span>';
     events.forEach(function(e){ var d=parseISO(e.date); if(d<=today&&d>=born){ var pct=Math.min(99,Math.max(1,((d-born)/span)*100)); h+='<span class="plc-bead" style="left:'+pct+'%;background:'+CATEGORIES[e.category].color+'"></span>'; } });
     h+='<span class="plc-ribbon-end plc-ribbon-now">'+ic('heart',12)+'</span></div>';
-  } else {
-    h+='<p class="plc-hint">Добавьте дату рождения, чтобы видеть возраст и ленту жизни.</p>';
-  }
+  } else { h+='<p class="plc-hint">Добавьте дату рождения, чтобы видеть возраст и ленту жизни.</p>'; }
   if(state.pets.length<=1) h+='<button class="plc-textbtn" data-act="addPet">'+ic('plus',14)+' Ещё питомец</button>';
-  h+='</section>'; return h;
-}
-
+  return h+'</section>'; }
 function viewTabs(){ return '<div class="plc-viewtabs"><button class="'+(view==='timeline'?'is-on':'')+'" data-act="setView" data-view="timeline">'+ic('list',16)+' Лента</button><button class="'+(view==='calendar'?'is-on':'')+'" data-act="setView" data-view="calendar">'+ic('calendar',16)+' Календарь</button></div>'; }
-
 function eventRow(e,soon){ var c=CATEGORIES[e.category];
   return '<div class="plc-card plc-event"><div class="plc-event-ic" style="background:'+hexA(c.color,.14)+'">'+c.emoji+'</div>'
     +'<div class="plc-event-body"><div class="plc-event-top"><strong>'+(esc(e.title)||c.label)+'</strong><span class="plc-when'+(soon?' is-soon':'')+'">'+relDate(e.date)+'</span></div>'
     +'<span class="plc-event-date">'+fmtDate(e.date)+'</span>'+(e.notes?'<p class="plc-event-notes">'+esc(e.notes)+'</p>':'')+'</div>'
-    +'<div class="plc-event-acts"><button data-act="editEvent" data-id="'+e.id+'" aria-label="Изменить">'+ic('pencil',14)+'</button><button data-act="delEvent" data-id="'+e.id+'" aria-label="Удалить">'+ic('trash',14)+'</button></div></div>';
-}
-
+    +'<div class="plc-event-acts"><button data-act="editEvent" data-id="'+e.id+'" aria-label="Изменить">'+ic('pencil',14)+'</button><button data-act="delEvent" data-id="'+e.id+'" aria-label="Удалить">'+ic('trash',14)+'</button></div></div>'; }
 function timeline(events){
   if(!events.length) return '<div class="plc-card plc-empty">'+ic('paw',30)+'<p>Здесь будет история жизни питомца.</p><button class="plc-btn" data-act="addEvent">'+ic('plus',16)+' Первое событие</button></div>';
-  var today=startOfDay(new Date());
-  var up=events.filter(function(e){return parseISO(e.date)>=today;});
-  var past=events.filter(function(e){return parseISO(e.date)<today;}).reverse();
+  var today=startOfDay(new Date()); var up=events.filter(function(e){return parseISO(e.date)>=today;}); var past=events.filter(function(e){return parseISO(e.date)<today;}).reverse();
   var h='<div class="plc-stack">';
   if(up.length){ h+='<h2 class="plc-sec">'+ic('clock',15)+' Впереди</h2>'; up.forEach(function(e){h+=eventRow(e,true);}); }
   if(past.length){ h+='<h2 class="plc-sec">'+ic('heart',15)+' Прожито</h2>'; past.forEach(function(e){h+=eventRow(e,false);}); }
-  h+='</div>'; return h;
-}
-
+  return h+'</div>'; }
 function calendar(events){
-  var y=calM.y,m=calM.m;
-  var first=new Date(y,m,1), offset=(first.getDay()+6)%7, daysIn=new Date(y,m+1,0).getDate();
-  var byDay={}; events.forEach(function(e){ var d=parseISO(e.date); if(d.getFullYear()===y&&d.getMonth()===m){ (byDay[d.getDate()]=byDay[d.getDate()]||[]).push(e); } });
-  var td=new Date();
-  function isToday(d){ return td.getFullYear()===y&&td.getMonth()===m&&td.getDate()===d; }
+  var y=calM.y,m=calM.m,first=new Date(y,m,1),offset=(first.getDay()+6)%7,daysIn=new Date(y,m+1,0).getDate();
+  var byDay={}; events.forEach(function(e){ var d=parseISO(e.date); if(d.getFullYear()===y&&d.getMonth()===m)(byDay[d.getDate()]=byDay[d.getDate()]||[]).push(e); });
+  var td=new Date(); function isToday(d){ return td.getFullYear()===y&&td.getMonth()===m&&td.getDate()===d; }
   var h='<div class="plc-stack"><div class="plc-card plc-cal"><div class="plc-cal-head"><button data-act="calPrev" aria-label="Назад">'+ic('chevL',18)+'</button><span>'+MONTHS[m]+' '+y+'</span><button data-act="calNext" aria-label="Вперёд">'+ic('chevR',18)+'</button></div>';
   h+='<div class="plc-cal-grid plc-cal-wd">'; WEEKDAYS.forEach(function(w){h+='<span class="plc-wd">'+w+'</span>';}); h+='</div><div class="plc-cal-grid">';
   for(var i=0;i<offset;i++) h+='<span class="plc-day is-empty"></span>';
-  for(var d=1;d<=daysIn;d++){ var evs=byDay[d]||[]; var dots='';
-    evs.slice(0,3).forEach(function(e){ dots+='<i style="background:'+CATEGORIES[e.category].color+'"></i>'; });
-    h+='<button class="plc-day'+(isToday(d)?' is-today':'')+(selDay===d?' is-sel':'')+'" data-act="selDay" data-day="'+d+'"><span class="plc-day-n">'+d+'</span><span class="plc-dots">'+dots+'</span></button>';
-  }
+  for(var d=1;d<=daysIn;d++){ var evs=byDay[d]||[],dots=''; evs.slice(0,3).forEach(function(e){dots+='<i style="background:'+CATEGORIES[e.category].color+'"></i>';});
+    h+='<button class="plc-day'+(isToday(d)?' is-today':'')+(selDay===d?' is-sel':'')+'" data-act="selDay" data-day="'+d+'"><span class="plc-day-n">'+d+'</span><span class="plc-dots">'+dots+'</span></button>'; }
   h+='</div></div>';
-  if(selDay){ var iso=toISO(new Date(y,m,selDay)); var de=byDay[selDay]||[];
+  if(selDay){ var iso=toISO(new Date(y,m,selDay)),de=byDay[selDay]||[];
     h+='<div class="plc-stack"><div class="plc-daybar"><span>'+selDay+' '+MONTHS_GEN[m]+'</span><button class="plc-btn plc-btn-sm" data-act="addEvent" data-date="'+iso+'">'+ic('plus',15)+' Добавить</button></div>';
-    if(de.length) de.forEach(function(e){h+=eventRow(e,false);}); else h+='<p class="plc-hint plc-hint-c">В этот день пока ничего не отмечено.</p>';
-    h+='</div>';
-  }
-  h+='</div>'; return h;
-}
+    if(de.length) de.forEach(function(e){h+=eventRow(e,false);}); else h+='<p class="plc-hint plc-hint-c">В этот день пока ничего не отмечено.</p>'; h+='</div>'; }
+  return h+'</div>'; }
 
-function render(){
-  var app=document.getElementById('app');
-  var active=activePet();
-  if(active) state.activePetId=active.id;
-  var html=topBar();
+function setPassScreen(){ return '<div class="plc-auth"><div class="plc-auth-logo">'+ic('lock',24)+'</div><h1>Придумайте пароль</h1>'
+  +'<p class="sub">Он будет открывать дневник. Записи хранятся на этом устройстве в зашифрованном виде.</p>'
+  +'<div class="plc-card" style="padding:18px;display:flex;flex-direction:column;gap:12px">'
+  +'<div class="plc-field"><label class="plc-lbl">Пароль</label><input id="p1" class="plc-input" type="password" autocomplete="new-password" placeholder="не короче 6 символов"></div>'
+  +'<div class="plc-field"><label class="plc-lbl">Повторите пароль</label><input id="p2" class="plc-input" type="password" autocomplete="new-password" placeholder="ещё раз"></div>'
+  +(lockErr?'<div class="plc-err">'+esc(lockErr)+'</div>':'')
+  +'<button class="plc-btn" id="setBtn">Создать пароль</button></div>'
+  +'<p class="plc-note">Запомните пароль: восстановить его нельзя — без него записи не открыть.</p></div>'; }
+
+function unlockScreen(){ return '<div class="plc-auth"><div class="plc-auth-logo">'+ic('lock',24)+'</div><h1>Дневник жизни</h1>'
+  +'<p class="sub">Введите пароль, чтобы открыть записи.</p>'
+  +'<div class="plc-card" style="padding:18px;display:flex;flex-direction:column;gap:12px">'
+  +'<div class="plc-field"><label class="plc-lbl">Пароль</label><input id="p1" class="plc-input" type="password" autocomplete="current-password" placeholder="ваш пароль"></div>'
+  +(lockErr?'<div class="plc-err">'+esc(lockErr)+'</div>':'')
+  +'<button class="plc-btn" id="unlockBtn">Войти</button></div>'
+  +'<button class="plc-link" id="resetBtn">Забыли пароль?</button></div>'; }
+
+/* --------------------------------- paint --------------------------------- */
+function paint(){
+  var app=document.getElementById('app'),fab=document.getElementById('fab');
+  if(appState==='loading'){ app.innerHTML='<div class="plc-spinner"></div>'; fab.style.display='none'; return; }
+  if(appState==='setpass'){ app.innerHTML=setPassScreen(); fab.style.display='none'; mountSetPass(); return; }
+  if(appState==='unlock'){ app.innerHTML=unlockScreen(); fab.style.display='none'; mountUnlock(); return; }
+  var active=activePet(); if(active)state.activePetId=active.id;
+  var html=topBar(true);
   if(!active){ html+=welcome(); }
-  else {
-    var events=eventsFor(active.id);
-    if(state.pets.length>1) html+=switcher(state.pets,active);
-    html+=petCard(active,events)+viewTabs()+(view==='timeline'?timeline(events):calendar(events));
-  }
-  app.innerHTML=html;
-  document.getElementById('fab').style.display = active ? 'grid' : 'none';
+  else { var events=eventsFor(active.id); if(state.pets.length>1)html+=switcher(state.pets,active); html+=petCard(active,events)+viewTabs()+(view==='timeline'?timeline(events):calendar(events)); }
+  app.innerHTML=html; fab.style.display=active?'grid':'none';
 }
 
-/* --------------------------------- modals --------------------------------- */
+/* ------------------------------ lock handlers ---------------------------- */
+function onEnter(input,btn){ input.addEventListener('keydown',function(e){ if(e.key==='Enter')btn.click(); }); }
+function mountSetPass(){ var p1=document.getElementById('p1'),p2=document.getElementById('p2'),btn=document.getElementById('setBtn');
+  btn.onclick=doSetPass; onEnter(p1,btn); onEnter(p2,btn); p1.focus(); }
+function mountUnlock(){ var p1=document.getElementById('p1'),btn=document.getElementById('unlockBtn');
+  btn.onclick=doUnlock; onEnter(p1,btn); p1.focus();
+  document.getElementById('resetBtn').onclick=doReset; }
+
+async function doSetPass(){
+  var p1=document.getElementById('p1').value, p2=document.getElementById('p2').value; lockErr='';
+  if(p1.length<6){ lockErr="Пароль должен быть не короче 6 символов."; paint(); return; }
+  if(p1!==p2){ lockErr="Пароли не совпадают."; paint(); return; }
+  var btn=document.getElementById('setBtn'); btn.disabled=true; btn.textContent="Создаём…";
+  try{
+    saltBytes=crypto.getRandomValues(new Uint8Array(16));
+    cryptoKey=await deriveKey(p1,saltBytes);
+    state={pets:[],events:[],activePetId:null};
+    await persist(); appState='app'; paint();
+  }catch(e){ lockErr="Ошибка: "+(e.message||e); paint(); }
+}
+async function doUnlock(){
+  var p1=document.getElementById('p1').value; lockErr='';
+  var btn=document.getElementById('unlockBtn'); btn.disabled=true; btn.textContent="Открываем…";
+  try{ var d=await tryDecrypt(p1); state=d; appState='app'; paint(); }
+  catch(e){ lockErr="Неверный пароль."; paint(); }
+}
+function doReset(){
+  if(confirm('Сбросить пароль и удалить ВСЕ записи на этом устройстве? Это нельзя отменить.')){
+    localStorage.removeItem(KEY); cryptoKey=null; saltBytes=null; state={pets:[],events:[],activePetId:null}; lockErr=''; appState='setpass'; paint();
+  }
+}
+function lock(){ cryptoKey=null; state={pets:[],events:[],activePetId:null}; lockErr=''; appState='unlock'; paint(); }
+
+/* ------------------------------- interaction ----------------------------- */
+document.getElementById('app').addEventListener('click',function(e){
+  var t=e.target.closest('[data-act]'); if(!t)return; var a=t.getAttribute('data-act');
+  if(a==='addPet') openPetForm(null);
+  else if(a==='editPet') openPetForm(activePet());
+  else if(a==='switchPet'){ state.activePetId=t.getAttribute('data-id'); selDay=null; paint(); }
+  else if(a==='setView'){ view=t.getAttribute('data-view'); selDay=null; paint(); }
+  else if(a==='calPrev'){ var p=new Date(calM.y,calM.m-1,1); calM={y:p.getFullYear(),m:p.getMonth()}; selDay=null; paint(); }
+  else if(a==='calNext'){ var n=new Date(calM.y,calM.m+1,1); calM={y:n.getFullYear(),m:n.getMonth()}; selDay=null; paint(); }
+  else if(a==='selDay'){ var d=+t.getAttribute('data-day'); selDay=selDay===d?null:d; paint(); }
+  else if(a==='addEvent') openEventForm({date:t.getAttribute('data-date')||todayISO()});
+  else if(a==='editEvent') openEventForm({event:state.events.filter(function(x){return x.id===t.getAttribute('data-id');})[0]});
+  else if(a==='delEvent'){ if(confirm('Удалить это событие?')) deleteEvent(t.getAttribute('data-id')); }
+  else if(a==='lock') lock();
+});
+document.getElementById('fab').addEventListener('click',function(){ openEventForm({date:todayISO()}); });
+
+/* --------------------------------- modals -------------------------------- */
 function openSheet(title,bodyHTML,onMount){
   var m=document.getElementById('modal');
   m.innerHTML='<div class="plc-overlay" id="ov"><div class="plc-sheet"><div class="plc-sheet-grab"></div><div class="plc-sheet-head"><h3>'+esc(title)+'</h3><button class="plc-iconbtn" id="closeBtn" aria-label="Закрыть">'+ic('x')+'</button></div><div class="plc-sheet-body">'+bodyHTML+'</div></div></div>';
-  document.getElementById('ov').addEventListener('click',function(e){ if(e.target.id==='ov') closeSheet(); });
-  document.getElementById('closeBtn').addEventListener('click',closeSheet);
-  if(onMount) onMount();
-}
+  document.getElementById('ov').addEventListener('click',function(e){ if(e.target.id==='ov')closeSheet(); });
+  document.getElementById('closeBtn').addEventListener('click',closeSheet); if(onMount)onMount(); }
 function closeSheet(){ document.getElementById('modal').innerHTML=''; }
-
 function field(id,label,value,type,ph){ return '<div class="plc-field"><label class="plc-lbl">'+label+'</label><input id="'+id+'" class="plc-input" type="'+(type||'text')+'" value="'+esc(value||'')+'" placeholder="'+esc(ph||'')+'"></div>'; }
 
 function openPetForm(pet){
-  var emoji = pet?pet.emoji:'🐶';
+  var emoji=pet?pet.emoji:'🐶';
   var body='<label class="plc-lbl">Аватар</label><div class="plc-emoji-grid" id="emojiGrid">'
     +PET_EMOJIS.map(function(e){return '<button type="button" class="plc-emoji'+(e===emoji?' is-on':'')+'" data-emoji="'+e+'">'+e+'</button>';}).join('')+'</div>'
     +field('f_name','Кличка',pet?pet.name:'','text','Например, Барсик')
@@ -343,20 +394,16 @@ function openPetForm(pet){
   openSheet(pet?'Профиль питомца':'Новый питомец',body,function(){
     var grid=document.getElementById('emojiGrid');
     grid.addEventListener('click',function(e){ var b=e.target.closest('[data-emoji]'); if(!b)return; emoji=b.getAttribute('data-emoji');
-      grid.querySelectorAll('.plc-emoji').forEach(function(x){ x.classList.toggle('is-on', x.getAttribute('data-emoji')===emoji); }); });
-    document.getElementById('saveBtn').addEventListener('click',function(){
-      var name=document.getElementById('f_name').value.trim(); if(!name){ document.getElementById('f_name').focus(); return; }
-      var p={ emoji:emoji, name:name, species:document.getElementById('f_species').value.trim(), breed:document.getElementById('f_breed').value.trim(), birthday:document.getElementById('f_birthday').value };
-      if(pet) p.id=pet.id; savePet(p); closeSheet();
-    });
-    if(pet) document.getElementById('delBtn').addEventListener('click',function(){ if(confirm('Удалить «'+pet.name+'» и все его записи?')){ deletePet(pet.id); closeSheet(); } });
+      grid.querySelectorAll('.plc-emoji').forEach(function(x){x.classList.toggle('is-on',x.getAttribute('data-emoji')===emoji);}); });
+    document.getElementById('saveBtn').onclick=function(){
+      var name=document.getElementById('f_name').value.trim(); if(!name){document.getElementById('f_name').focus();return;}
+      var p={emoji:emoji,name:name,species:document.getElementById('f_species').value.trim(),breed:document.getElementById('f_breed').value.trim(),birthday:document.getElementById('f_birthday').value};
+      if(pet)p.id=pet.id; savePet(p); closeSheet(); };
+    if(pet)document.getElementById('delBtn').onclick=function(){ if(confirm('Удалить «'+pet.name+'» и все его записи?')){ deletePet(pet.id); closeSheet(); } };
   });
 }
-
-function openEventForm(opt){
-  opt=opt||{}; var ev=opt.event||null;
-  var cat = ev?ev.category:'vet';
-  function catGrid(){ return CAT_ORDER.map(function(k){ var c=CATEGORIES[k]; var on=k===cat;
+function openEventForm(opt){ opt=opt||{}; var ev=opt.event||null; var cat=ev?ev.category:'vet';
+  function catGrid(){ return CAT_ORDER.map(function(k){ var c=CATEGORIES[k],on=k===cat;
     return '<button type="button" class="plc-cat'+(on?' is-on':'')+'" data-cat="'+k+'" style="'+(on?'background:'+hexA(c.color,.16)+';border-color:'+c.color+';color:'+c.color:'')+'">'+c.emoji+' '+c.label+'</button>'; }).join(''); }
   var body='<label class="plc-lbl">Категория</label><div class="plc-cat-grid" id="catGrid">'+catGrid()+'</div>'
     +field('f_title','Название',ev?ev.title:'','text',CATEGORIES[cat].label)
@@ -365,55 +412,39 @@ function openEventForm(opt){
     +'<div class="plc-sheet-acts">'+(ev?'<button class="plc-btn plc-btn-ghost plc-btn-danger" id="delBtn">'+ic('trash',16)+' Удалить</button>':'')+'<button class="plc-btn" id="saveBtn">Сохранить</button></div>';
   openSheet(ev?'Событие':'Новое событие',body,function(){
     var grid=document.getElementById('catGrid');
-    grid.addEventListener('click',function(e){ var b=e.target.closest('[data-cat]'); if(!b)return; cat=b.getAttribute('data-cat');
-      grid.innerHTML=catGrid();
-      var ph=document.getElementById('f_title'); if(ph&&!ph.value) ph.setAttribute('placeholder',CATEGORIES[cat].label); });
-    document.getElementById('saveBtn').addEventListener('click',function(){
-      var date=document.getElementById('f_date').value; if(!date){ document.getElementById('f_date').focus(); return; }
-      var data={ category:cat, title:document.getElementById('f_title').value.trim(), date:date, notes:document.getElementById('f_notes').value.trim() };
-      if(ev){ data.id=ev.id; data.petId=ev.petId; } saveEvent(data); closeSheet();
-    });
-    if(ev) document.getElementById('delBtn').addEventListener('click',function(){ if(confirm('Удалить это событие?')){ state.events=state.events.filter(function(x){return x.id!==ev.id;}); closeSheet(); commit(); } });
+    grid.addEventListener('click',function(e){ var b=e.target.closest('[data-cat]'); if(!b)return; cat=b.getAttribute('data-cat'); grid.innerHTML=catGrid();
+      var ph=document.getElementById('f_title'); if(ph&&!ph.value)ph.setAttribute('placeholder',CATEGORIES[cat].label); });
+    document.getElementById('saveBtn').onclick=function(){
+      var date=document.getElementById('f_date').value; if(!date){document.getElementById('f_date').focus();return;}
+      var data={category:cat,title:document.getElementById('f_title').value.trim(),date:date,notes:document.getElementById('f_notes').value.trim()};
+      if(ev){data.id=ev.id;data.petId=ev.petId;} saveEvent(data); closeSheet(); };
+    if(ev)document.getElementById('delBtn').onclick=function(){ if(confirm('Удалить это событие?')){ deleteEvent(ev.id); closeSheet(); } };
   });
 }
 
-/* ------------------------------- interaction ------------------------------ */
-document.getElementById('app').addEventListener('click',function(e){
-  var t=e.target.closest('[data-act]'); if(!t)return;
-  var a=t.getAttribute('data-act');
-  if(a==='addPet') openPetForm(null);
-  else if(a==='editPet') openPetForm(activePet());
-  else if(a==='switchPet'){ state.activePetId=t.getAttribute('data-id'); selDay=null; render(); }
-  else if(a==='setView'){ view=t.getAttribute('data-view'); selDay=null; render(); }
-  else if(a==='calPrev'){ var p=new Date(calM.y,calM.m-1,1); calM={y:p.getFullYear(),m:p.getMonth()}; selDay=null; render(); }
-  else if(a==='calNext'){ var n=new Date(calM.y,calM.m+1,1); calM={y:n.getFullYear(),m:n.getMonth()}; selDay=null; render(); }
-  else if(a==='selDay'){ var d=+t.getAttribute('data-day'); selDay = selDay===d?null:d; render(); }
-  else if(a==='addEvent') openEventForm({date:t.getAttribute('data-date')||todayISO()});
-  else if(a==='editEvent') openEventForm({event:state.events.filter(function(x){return x.id===t.getAttribute('data-id');})[0]});
-  else if(a==='delEvent'){ if(confirm('Удалить это событие?')){ state.events=state.events.filter(function(x){return x.id!==t.getAttribute('data-id');}); commit(); } }
-});
-document.getElementById('fab').addEventListener('click',function(){ openEventForm({date:todayISO()}); });
+/* -------------------------------- app icon ------------------------------- */
+function makeIcon(){ try{
+  var c=document.createElement('canvas'); c.width=180; c.height=180; var x=c.getContext('2d'); var r=40;
+  x.fillStyle='#E0736A'; x.beginPath(); x.moveTo(r,0); x.lineTo(180-r,0); x.arcTo(180,0,180,r,r); x.lineTo(180,180-r); x.arcTo(180,180,180-r,180,r);
+  x.lineTo(r,180); x.arcTo(0,180,0,180-r,r); x.lineTo(0,r); x.arcTo(0,0,r,0,r); x.closePath(); x.fill();
+  x.fillStyle='#fff'; x.beginPath(); x.ellipse(90,114,30,25,0,0,7); x.fill();
+  [[58,82,15],[80,62,16],[100,62,16],[122,82,15]].forEach(function(t){x.beginPath();x.arc(t[0],t[1],t[2],0,7);x.fill();});
+  var url=c.toDataURL('image/png');
+  var l=document.createElement('link'); l.rel='apple-touch-icon'; l.href=url; document.head.appendChild(l);
+  var f=document.createElement('link'); f.rel='icon'; f.href=url; document.head.appendChild(f);
+}catch(e){} }
 
-/* ------------------------------- app icon --------------------------------- */
-function makeIcon(){
-  try{
-    var c=document.createElement('canvas'); c.width=180; c.height=180; var x=c.getContext('2d');
-    var r=40; x.fillStyle='#E0736A'; x.beginPath();
-    x.moveTo(r,0); x.lineTo(180-r,0); x.arcTo(180,0,180,r,r); x.lineTo(180,180-r); x.arcTo(180,180,180-r,180,r);
-    x.lineTo(r,180); x.arcTo(0,180,0,180-r,r); x.lineTo(0,r); x.arcTo(0,0,r,0,r); x.closePath(); x.fill();
-    x.fillStyle='#ffffff';
-    x.beginPath(); x.ellipse(90,114,30,25,0,0,7); x.fill();
-    [[58,82,15],[80,62,16],[100,62,16],[122,82,15]].forEach(function(t){ x.beginPath(); x.arc(t[0],t[1],t[2],0,7); x.fill(); });
-    var url=c.toDataURL('image/png');
-    var link=document.createElement('link'); link.rel='apple-touch-icon'; link.href=url; document.head.appendChild(link);
-    var fav=document.createElement('link'); fav.rel='icon'; fav.href=url; document.head.appendChild(fav);
-    var man={ name:'Дневник жизни питомца', short_name:'Дневник', display:'standalone', start_url:'./', background_color:'#F4EDE2', theme_color:'#E0736A', icons:[{src:url,sizes:'180x180',type:'image/png'}] };
-    var ml=document.createElement('link'); ml.rel='manifest'; ml.href='data:application/json,'+encodeURIComponent(JSON.stringify(man)); document.head.appendChild(ml);
-  }catch(e){}
+/* ----------------------------------- init -------------------------------- */
+function init(){
+  makeIcon();
+  if(!window.crypto||!crypto.subtle){
+    document.getElementById('app').innerHTML='<div class="plc-card" style="padding:20px"><p class="plc-err">Для защиты паролем страницу нужно открывать по ссылке https:// (после размещения в интернете), а не как локальный файл.</p></div>';
+    return;
+  }
+  appState = localStorage.getItem(KEY) ? 'unlock' : 'setpass';
+  paint();
 }
-
-makeIcon();
-render();
+init();
 </script>
 </body>
 </html>
